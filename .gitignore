@@ -1,0 +1,20 @@
+# General
+.DS_Store
+*.log
+
+# Rust
+target/
+
+# Flutter / Dart
+build/
+.dart_tool/
+.packages
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Node/npm (in case infra uses it later)
+node_modules/
+
+# Others
+.env

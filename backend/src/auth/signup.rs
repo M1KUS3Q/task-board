@@ -1,31 +1,58 @@
-use axum::{Json, http::StatusCode};
-use serde::{Deserialize, Serialize};
+use axum::{Extension, Json, http::StatusCode};
+use sqlx::SqlitePool;
+use tracing::{error, info};
 
-pub async fn create_user(
-    // this argument tells axum to parse the request body
-    // as JSON into a `CreateUser` type
-    Json(payload): Json<CreateUser>,
-) -> (StatusCode, Json<User>) {
-    // insert your application logic here
-    let user = User {
-        id: 1337,
-        username: payload.username,
+use crate::auth::{LoginRequest, hash_password, username_exists};
+
+pub async fn signup(
+    db: Extension<SqlitePool>,
+    Json(payload): Json<LoginRequest>,
+) -> (StatusCode, Json<String>) {
+    if username_exists(&payload.username, db.clone())
+        .await
+        .unwrap_or_else(|e| {
+            error!("Failed to check username existence: {}", e);
+            true
+        })
+    {
+        return (
+            StatusCode::CONFLICT,
+            Json("Username already exists".to_string()),
+        );
+    }
+
+    let hash = match hash_password(&payload.password) {
+        Ok(hash) => hash,
+        Err(e) => {
+            error!("Failed to hash password: {}", e);
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json("Failed to hash password".to_string()),
+            );
+        }
     };
 
-    // this will be converted into a JSON response
-    // with a status code of `201 Created`
-    (StatusCode::CREATED, Json(user))
-}
-
-// the input to our `create_user` handler
-#[derive(Deserialize)]
-pub struct CreateUser {
-    username: String,
-}
-
-// the output to our `create_user` handler
-#[derive(Serialize)]
-pub struct User {
-    id: u64,
-    username: String,
+    match sqlx::query!(
+        "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+        payload.username,
+        hash
+    )
+    .execute(&db.0)
+    .await
+    {
+        Ok(_) => {
+            info!("User {} created successfully", payload.username);
+            (
+                StatusCode::CREATED,
+                Json("User created successfully".to_string()),
+            )
+        }
+        Err(e) => {
+            error!("Failed to create user: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json("Failed to create user".to_string()),
+            )
+        }
+    }
 }

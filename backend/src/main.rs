@@ -1,10 +1,8 @@
 pub mod auth;
 pub mod db;
 
-use axum::{Json, Router, http::StatusCode, routing};
-use serde::{Deserialize, Serialize};
-
-use crate::auth::signup::create_user;
+use axum::extract::Extension;
+use axum::{Router, routing};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -12,19 +10,20 @@ async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
 
     let pool = db::connect_env().await;
-    let count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM users")
-        .fetch_one(&pool)
-        .await?;
-    println!("Number of users: {count}");
 
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_target(false)
+        .init();
 
-    // build our application with a route
+    tracing::info!("Database connection established");
+
     let app = Router::new()
-        // `GET /` goes to `root`
         .route("/", routing::get(root))
-        // `POST /users` goes to `create_user`
-        .route("/users", routing::post(create_user));
+        .route("/signup", routing::post(auth::signup::signup))
+        .route("/login", routing::post(auth::login::login))
+        .route("/protected", routing::get(auth::protect::protected_route))
+        .layer(Extension(pool));
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

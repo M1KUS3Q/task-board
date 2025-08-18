@@ -18,3 +18,12 @@ node_modules/
 
 # Others
 .env
+
+# database files
+*.db
+*.sqlite
+
+# python
+__pycache__/
+*.pyc
+venv/

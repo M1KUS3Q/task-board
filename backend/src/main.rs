@@ -6,7 +6,6 @@ use axum::{Router, routing};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // initialize tracing
     dotenvy::dotenv().ok();
 
     let pool = db::connect_env().await;
@@ -20,9 +19,14 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", routing::get(root))
-        .route("/signup", routing::post(auth::signup::signup))
-        .route("/login", routing::post(auth::login::login))
-        .route("/protected", routing::get(auth::protect::protected_route))
+        .route("/health", routing::get(|| async { "OK" }))
+        .route("/api/auth/signup", routing::post(auth::signup::signup))
+        .route("/api/auth/login", routing::post(auth::login::login))
+        .route("/api/me", routing::get(auth::me::me))
+        .route(
+            "/api/protected",
+            routing::get(auth::protect::protected_route),
+        )
         .layer(Extension(pool));
 
     // run our app with hyper, listening globally on port 3000

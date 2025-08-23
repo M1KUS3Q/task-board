@@ -41,6 +41,10 @@ def test_database():
 def server(test_database):
     env = os.environ.copy()
     env["DATABASE_URL"] = f"sqlite:{test_database}"
+    
+    # Offline mode makes sqlx (the rust database bridge used) skip validation with live DB
+    # The backend works fine without it, but sqlx doesn't compile otherwise
+    env["OFFLINE_MODE"] = "true"
 
     proc = subprocess.Popen(
         ["cargo", "run"],

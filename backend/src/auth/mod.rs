@@ -3,6 +3,7 @@ use sqlx::SqlitePool;
 use tracing::info;
 
 pub mod login;
+pub mod me;
 pub mod protect;
 pub mod signup;
 

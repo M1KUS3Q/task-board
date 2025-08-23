@@ -11,10 +11,18 @@ pub struct Claims {
     pub exp: usize, // expiration timestamp
 }
 
+#[derive(Serialize)]
+pub enum LoginResponse {
+    #[serde(rename = "token")]
+    Token(String),
+    #[serde(rename = "error")]
+    Error(String),
+}
+
 pub async fn login(
     db: axum::extract::Extension<SqlitePool>,
     Json(payload): Json<LoginRequest>,
-) -> (StatusCode, Json<String>) {
+) -> (StatusCode, Json<LoginResponse>) {
     let user = match sqlx::query!(
         "SELECT id, password_hash FROM users WHERE username = ?",
         payload.username
@@ -26,7 +34,7 @@ pub async fn login(
         Err(_) => {
             return (
                 StatusCode::NOT_FOUND,
-                Json("User does not exist".to_string()),
+                Json(LoginResponse::Error("User does not exist".to_string())),
             );
         }
     };
@@ -36,13 +44,13 @@ pub async fn login(
         Ok(false) => {
             return (
                 StatusCode::UNAUTHORIZED,
-                Json("Invalid credentials".to_string()),
+                Json(LoginResponse::Error("Invalid credentials".to_string())),
             );
         }
         Err(e) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(format!("Error validating user: {e}")),
+                Json(LoginResponse::Error(format!("Error validating user"))),
             );
         }
     };
@@ -58,7 +66,9 @@ pub async fn login(
             tracing::error!("JWT_SECRET environment variable not set");
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json("Server improperly configured".to_string()),
+                Json(LoginResponse::Error(
+                    "Server configuration error".to_string(),
+                )),
             );
         }
     };
@@ -73,10 +83,10 @@ pub async fn login(
             tracing::error!("Failed to create JWT token: {}", e);
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json("Failed to create JWT token".to_string()),
+                Json(LoginResponse::Error("Failed to create token".to_string())),
             );
         }
     };
 
-    (StatusCode::OK, Json(token))
+    (StatusCode::OK, Json(LoginResponse::Token(token)))
 }

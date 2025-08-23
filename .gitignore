@@ -22,8 +22,11 @@ node_modules/
 # database files
 *.db
 *.sqlite
+*.db-shm
+*.db-wal
 
 # python
 __pycache__/
 *.pyc
+.pytest_cache/
 venv/

@@ -5,6 +5,7 @@ import requests
 from requests.adapters import HTTPAdapter, Retry
 import time
 import pytest
+import sys
 
 BASE_DIR = pathlib.Path(__file__).resolve().parents[1] # /backend/
 TEST_DB = BASE_DIR / "test.db"
@@ -41,17 +42,17 @@ def test_database():
 def server(test_database):
     env = os.environ.copy()
     env["DATABASE_URL"] = f"sqlite:{test_database}"
-    
+
     # Offline mode makes sqlx (the rust database bridge used) skip validation with live DB
     # The backend works fine without it, but sqlx doesn't compile otherwise
-    env["OFFLINE_MODE"] = "true"
+    env["SQLX_OFFLINE"] = "true"
 
     proc = subprocess.Popen(
         ["cargo", "run"],
         cwd=str(BASE_DIR),
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
         text=True,
         bufsize=1
     )

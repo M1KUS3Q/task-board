@@ -48,9 +48,10 @@ pub async fn login(
             );
         }
         Err(e) => {
+            tracing::error!("Error validating user: {}", e);
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(LoginResponse::Error(format!("Error validating user"))),
+                Json(LoginResponse::Error("Error validating user".to_string())),
             );
         }
     };

@@ -125,7 +125,12 @@ pub async fn validate(
     password: &str,
     db: axum::extract::Extension<SqlitePool>,
 ) -> Result<bool, String> {
-    assert!(!username.is_empty(), "Username cannot be empty");
+    if username.is_empty() {
+        return Err("Username cannot be empty".to_string());
+    }
+    if password.is_empty() {
+        return Err("Password cannot be empty".to_string());
+    }
     assert!(!password.is_empty(), "Password cannot be empty");
 
     let hash = sqlx::query!(

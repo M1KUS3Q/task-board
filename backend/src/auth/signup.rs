@@ -2,8 +2,32 @@ use axum::{Extension, Json, http::StatusCode};
 use sqlx::SqlitePool;
 use tracing::{error, info};
 
-use crate::auth::{LoginRequest, hash_password, username_exists};
+use crate::auth::utils::{LoginRequest, hash_password, username_exists};
 
+/// Asynchronous handler for user signup.
+///
+/// Checks whether the provided username already exists, hashes the provided password,
+/// and inserts a new user record into the `users` table of the SQLite database.
+///
+/// # Arguments
+///
+/// * `db` - Extension wrapping a `SqlitePool` for database access.
+/// * `payload` - JSON body deserialized into `LoginRequest` containing `username` and `password`.
+///
+/// # Returns
+///
+/// A `(StatusCode, Json<String>)` tuple:
+/// - `StatusCode::CREATED` (201) with a success message when the user is created successfully.
+/// - `StatusCode::CONFLICT` (409) with an error message if the username already exists.
+/// - `StatusCode::INTERNAL_SERVER_ERROR` (500) with an error message if password hashing or
+///   database insertion fails.
+///
+/// # Errors
+///
+/// - Returns `StatusCode::INTERNAL_SERVER_ERROR` if:
+///   - Checking username existence fails.
+///   - Password hashing fails.
+///   - Database insertion fails.
 pub async fn signup(
     db: Extension<SqlitePool>,
     Json(payload): Json<LoginRequest>,

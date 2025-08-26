@@ -3,7 +3,7 @@ use jsonwebtoken::{EncodingKey, Header, encode};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 
-use crate::auth::LoginRequest;
+use crate::auth::utils::LoginRequest;
 
 #[derive(Serialize, Deserialize)]
 pub struct Claims {
@@ -39,7 +39,7 @@ pub async fn login(
         }
     };
 
-    match crate::auth::validate(&payload.username, &payload.password, db).await {
+    match crate::auth::utils::validate(&payload.username, &payload.password, db).await {
         Ok(true) => {}
         Ok(false) => {
             return (

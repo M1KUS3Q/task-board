@@ -14,6 +14,28 @@ pub struct MeResponse {
     username: String,
 }
 
+/// Retrieves the currently authenticated user's information.
+///
+/// This handler extracts the `Authorization: Bearer <token>` header,
+/// decodes and validates the JWT against the `JWT_SECRET` environment variable,
+/// checks for token expiration, and then queries the SQLite database
+/// for the username corresponding to the user ID in the token claims.
+///
+/// # Parameters
+///
+/// * `auth` – a typed header extractor for `Authorization<Bearer>`, containing the JWT.
+/// * `db` – an `Extension<SqlitePool>` for executing database queries.
+///
+/// # Returns
+///
+/// Returns `Ok(Json(MeResponse))` on success, containing:
+/// - `id`: the user's ID extracted from the token subject (`sub`)
+/// - `username`: the username fetched from the database
+///
+/// # Errors
+///
+/// * `StatusCode::UNAUTHORIZED` if the token is missing, invalid, or expired.
+/// * `StatusCode::INTERNAL_SERVER_ERROR` if the database query fails.
 pub async fn me(
     TypedHeader(auth): TypedHeader<Authorization<headers::authorization::Bearer>>,
     db: axum::extract::Extension<SqlitePool>,

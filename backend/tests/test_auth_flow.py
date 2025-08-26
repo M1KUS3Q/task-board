@@ -19,7 +19,7 @@ def test_signup_login_and_protected(http):
     headers = {"Authorization": f"Bearer {token}"}
 
     # 3) Hit a protected route
-    r = http.get(f"{http.base_url}/api/me", headers=headers)
+    r = http.get(f"{http.base_url}/api/auth/me", headers=headers)
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["username"] == "new@user.dev"

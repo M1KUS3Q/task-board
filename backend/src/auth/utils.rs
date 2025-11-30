@@ -1,6 +1,10 @@
+use axum_extra::headers::{Authorization, authorization::Bearer};
+use jsonwebtoken::{DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use tracing::info;
+
+use crate::auth::login::Claims;
 
 /// LoginRequest holds the user's credentials for authentication.
 ///
@@ -151,4 +155,23 @@ pub async fn validate(
         argon2::verify_encoded(&hash.password_hash, password.as_bytes())
             .map_err(|_| "Failed to verify password")?,
     )
+}
+
+pub enum AuthError {
+    InvalidToken,
+    ExpiredToken,
+}
+pub fn extract_bearer(auth: Authorization<Bearer>) -> Result<i64, AuthError> {
+    let token_data = jsonwebtoken::decode::<Claims>(
+        auth.token(),
+        &DecodingKey::from_secret(std::env::var("JWT_SECRET").unwrap().as_ref()),
+        &Validation::default(),
+    )
+    .map_err(|_| AuthError::InvalidToken)?;
+
+    if token_data.claims.exp < chrono::Utc::now().timestamp() as usize {
+        return Err(AuthError::ExpiredToken);
+    }
+
+    Ok(token_data.claims.sub)
 }

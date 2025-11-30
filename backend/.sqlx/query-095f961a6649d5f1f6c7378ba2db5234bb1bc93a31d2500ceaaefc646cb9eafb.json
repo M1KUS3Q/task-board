@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT board_id FROM board_groups WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "board_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "095f961a6649d5f1f6c7378ba2db5234bb1bc93a31d2500ceaaefc646cb9eafb"
+}

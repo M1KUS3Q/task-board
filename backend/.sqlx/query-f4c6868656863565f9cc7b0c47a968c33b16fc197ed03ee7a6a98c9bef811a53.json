@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE board_users SET role = ? WHERE board_id = ? AND user_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "f4c6868656863565f9cc7b0c47a968c33b16fc197ed03ee7a6a98c9bef811a53"
+}

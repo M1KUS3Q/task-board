@@ -1,0 +1,43 @@
+CREATE TABLE boards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE board_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    board_id INT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role VARCHAR(50) NOT NULL CHECK (role IN ('owner','editor','viewer')),
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE board_groups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    board_id INT NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    position TEXT NOT NULL
+);
+
+CREATE INDEX idx_groups_board_pos ON board_groups(board_id, position);
+
+CREATE TABLE cards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    group_id INT NOT NULL REFERENCES board_groups(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    content TEXT,
+    position TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cards_group_pos ON cards(group_id, position);
+
+CREATE TABLE card_metadata (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    item_id INT NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+    key VARCHAR(100) NOT NULL,
+    value TEXT
+);

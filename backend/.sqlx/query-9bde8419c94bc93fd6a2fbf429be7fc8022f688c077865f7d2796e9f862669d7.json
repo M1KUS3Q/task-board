@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT item_id, key, value FROM card_metadata WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "item_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "key",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "value",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "9bde8419c94bc93fd6a2fbf429be7fc8022f688c077865f7d2796e9f862669d7"
+}

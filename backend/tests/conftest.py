@@ -28,15 +28,19 @@ def _wait_for_ready(url: str, timeout=20.0, interval=0.25):
 
 @pytest.fixture(scope="session")
 def test_database():
+    db_files = [TEST_DB, TEST_DB.with_suffix(".db-shm"), TEST_DB.with_suffix(".db-wal")]
+
     # setup
-    if TEST_DB.exists():
-        TEST_DB.unlink()
+    for f in db_files:
+        if f.exists():
+            f.unlink()
     
     yield str(TEST_DB)
 
     # cleanup
-    if TEST_DB.exists():
-        TEST_DB.unlink()
+    for f in db_files:
+        if f.exists():
+            f.unlink()
 
 @pytest.fixture(scope="session")
 def server(test_database):
@@ -84,3 +88,22 @@ def http(server):
     session.base_url = server  # attach for convenience
     yield session
     session.close()
+
+@pytest.fixture()
+def testuser_token_headers(http):
+    user = {
+        "username": "testuser@test.dev",
+        "password": "testuserpass123"
+    }
+    r = http.post(f"{http.base_url}/api/auth/signup", json=user)
+    assert r.status_code == 201, r.text
+
+    r = http.post(f"{http.base_url}/api/auth/login", json=user)
+    assert r.status_code == 200, r.text
+    token = r.json().get("token")
+    headers = {"Authorization": f"Bearer {token}"}
+
+
+    yield headers
+    
+    

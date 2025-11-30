@@ -1,4 +1,5 @@
 pub mod auth;
+pub mod boards;
 pub mod db;
 
 use axum::extract::Extension;
@@ -21,6 +22,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/", routing::get(root))
         .route("/api/health", routing::get(|| async { "OK" }))
         .nest("/api/auth", auth::router())
+        .nest("/api/board", boards::api::router())
         .layer(Extension(pool));
 
     // run our app with hyper, listening globally on port 3000

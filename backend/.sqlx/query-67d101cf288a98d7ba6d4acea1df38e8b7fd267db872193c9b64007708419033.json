@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT bg.board_id FROM card_metadata cm JOIN cards c ON cm.item_id = c.id JOIN board_groups bg ON c.group_id = bg.id WHERE cm.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "board_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "67d101cf288a98d7ba6d4acea1df38e8b7fd267db872193c9b64007708419033"
+}

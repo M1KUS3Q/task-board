@@ -13,7 +13,6 @@ def test_signup_login_and_protected(http):
     })
     assert r.status_code == 200, r.text
 
-    # If your API returns a JWT instead of cookie, store it:
     token = r.json().get("token")
     assert token is not None, f"No token in login response, got: {r.text}"
     headers = {"Authorization": f"Bearer {token}"}
